@@ -11,7 +11,10 @@ import {
   Award,
   Wrench,
   BookOpen,
-  CheckCircle
+  CheckCircle,
+  UserCircle,
+  FileText,
+  HelpCircle
 } from "lucide-react";
 
 const pathways = [
@@ -46,6 +49,16 @@ const valueCards = [
     description: "Reduced time-to-hire, lower dropout rates, and better retention through targeted matching and candidate preparation.",
     icon: CheckCircle,
   },
+];
+
+const quickLinks = [
+  { name: "Candidates", path: "/candidates", icon: UserCircle, description: "Start your career journey" },
+  { name: "Employers", path: "/employers", icon: Building2, description: "Find early-career talent" },
+  { name: "Jobs", path: "/jobs", icon: Briefcase, description: "Browse opportunities" },
+  { name: "Schools & Colleges", path: "/schools", icon: School, description: "Partner with us" },
+  { name: "Resources", path: "/resources", icon: FileText, description: "Guides & templates" },
+  { name: "About Us", path: "/about", icon: HelpCircle, description: "Our mission" },
+  { name: "Contact Us", path: "/contact", icon: Users, description: "Get in touch" },
 ];
 
 const Index = () => {
@@ -101,6 +114,32 @@ const Index = () => {
                 <pathway.icon className="h-4 w-4 text-primary" />
                 {pathway.name}
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Links Section - Mobile Navigation Alternative */}
+      <section className="py-12 lg:hidden">
+        <div className="container">
+          <h2 className="text-xl font-bold text-foreground mb-6 text-center">Quick Links</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {quickLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className="p-4 rounded-xl bg-card border border-border hover:border-primary/50 hover:bg-primary/5 transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <link.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-foreground">{link.name}</div>
+                    <div className="text-xs text-muted-foreground">{link.description}</div>
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
