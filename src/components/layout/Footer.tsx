@@ -1,13 +1,30 @@
 import { Link } from "react-router-dom";
 import { Building2 } from "lucide-react";
 
+const navigationLinks = [
+  { name: "Home", path: "/" },
+  { name: "Candidates", path: "/candidates" },
+  { name: "Employers", path: "/employers" },
+  { name: "Jobs", path: "/jobs" },
+  { name: "Schools & Colleges", path: "/schools" },
+  { name: "Resources", path: "/resources" },
+  { name: "About Us", path: "/about" },
+  { name: "Contact Us", path: "/contact" },
+];
+
+const legalLinks = [
+  { name: "Terms & Conditions", path: "/terms" },
+  { name: "Privacy Policy (GDPR)", path: "/privacy" },
+  { name: "Cookie Policy", path: "/cookies" },
+];
+
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="border-t border-border bg-background-deep">
       <div className="container py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12">
           {/* Brand Column */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-3">
@@ -24,17 +41,11 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
+          {/* Navigation Links */}
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-foreground">Quick Links</h4>
+            <h4 className="text-sm font-semibold text-foreground">Navigation</h4>
             <nav className="flex flex-col gap-2">
-              {[
-                { name: "Candidates", path: "/candidates" },
-                { name: "Employers", path: "/employers" },
-                { name: "Jobs", path: "/jobs" },
-                { name: "Schools & Colleges", path: "/schools" },
-                { name: "Resources", path: "/resources" },
-              ].map((link) => (
+              {navigationLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
@@ -50,23 +61,33 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-sm font-semibold text-foreground">Legal</h4>
             <nav className="flex flex-col gap-2">
+              {legalLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          {/* Get Started */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-foreground">Get Started</h4>
+            <nav className="flex flex-col gap-2">
               <Link
-                to="/terms"
+                to="/candidate-dashboard"
                 className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
-                Terms & Conditions
+                Register as Candidate
               </Link>
               <Link
-                to="/privacy"
+                to="/employer-dashboard"
                 className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
-                Privacy Policy (GDPR)
-              </Link>
-              <Link
-                to="/cookies"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Cookie Policy
+                Hire Talent
               </Link>
             </nav>
           </div>
