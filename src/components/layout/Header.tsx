@@ -1,14 +1,23 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Building2 } from "lucide-react";
+import { Building2, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const navLinks = [
-  { name: "Home", path: "/" },
+const visibleLinks = [
   { name: "About Us", path: "/about" },
+  { name: "Resources", path: "/resources" },
+];
+
+const dropdownLinks = [
+  { name: "Home", path: "/" },
   { name: "Contact Us", path: "/contact" },
   { name: "Employers", path: "/employers" },
   { name: "Jobs", path: "/jobs" },
-  { name: "Resources", path: "/resources" },
   { name: "Schools & Colleges", path: "/schools" },
 ];
 
@@ -35,7 +44,7 @@ export function Header() {
 
         {/* Desktop Navigation - Only visible on lg screens and up */}
         <nav className="hidden lg:flex items-center gap-1">
-          {navLinks.map((link) => (
+          {visibleLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
@@ -48,6 +57,30 @@ export function Header() {
               {link.name}
             </Link>
           ))}
+          
+          {/* Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-card focus:outline-none">
+              More
+              <ChevronDown className="h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+              {dropdownLinks.map((link) => (
+                <DropdownMenuItem key={link.path} asChild>
+                  <Link
+                    to={link.path}
+                    className={`w-full cursor-pointer ${
+                      location.pathname === link.path
+                        ? "text-primary"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         {/* CTA Buttons - Always visible, compact on mobile */}
