@@ -9,16 +9,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const visibleLinks = [
-  { name: "About Us", path: "/about" },
-  { name: "Resources", path: "/resources" },
+  { name: "Jobs", path: "/jobs" },
+  { name: "Employers", path: "/employers" },
+  { name: "Institutions", path: "/schools" },
 ];
 
 const dropdownLinks = [
-  { name: "Home", path: "/" },
+  { name: "About Us", path: "/about" },
+  { name: "Resources", path: "/resources" },
   { name: "Contact Us", path: "/contact" },
-  { name: "Employers", path: "/employers" },
-  { name: "Jobs", path: "/jobs" },
-  { name: "Schools & Colleges", path: "/schools" },
 ];
 
 export function Header() {
@@ -86,20 +85,19 @@ export function Header() {
         {/* CTA Buttons - Always visible, compact on mobile */}
         <div className="flex items-center gap-2 lg:gap-3">
           <Button 
-            variant="cta-secondary" 
+            variant="ghost" 
             size="sm" 
-            className="h-10 lg:h-9 px-4 lg:px-4 text-sm rounded-full"
+            className="h-10 lg:h-9 px-4 text-sm"
             asChild
           >
-            <Link to="/candidate-dashboard">Register</Link>
+            <Link to="/login">Sign In</Link>
           </Button>
           <Button 
-            variant="cta-primary" 
             size="sm" 
-            className="h-10 lg:h-9 px-4 lg:px-4 text-sm rounded-full"
+            className="h-10 lg:h-9 px-5 text-sm rounded-full bg-accent text-accent-foreground hover:bg-accent/90"
             asChild
           >
-            <Link to="/employer-dashboard">Hire Talent</Link>
+            <Link to="/register">Get Started</Link>
           </Button>
         </div>
       </div>

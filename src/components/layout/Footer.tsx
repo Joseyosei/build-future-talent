@@ -78,16 +78,16 @@ export function Footer() {
             <h4 className="text-sm font-semibold text-foreground">Get Started</h4>
             <nav className="flex flex-col gap-2">
               <Link
-                to="/candidate-dashboard"
+                to="/register"
                 className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
-                Register as Candidate
+                Create Account
               </Link>
               <Link
-                to="/employer-dashboard"
+                to="/login"
                 className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
-                Hire Talent
+                Sign In
               </Link>
             </nav>
           </div>
