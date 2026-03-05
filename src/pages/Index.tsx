@@ -14,8 +14,12 @@ import {
   CheckCircle,
   UserCircle,
   FileText,
-  HelpCircle
+  HelpCircle,
+  MapPin,
+  BarChart3,
+  Handshake
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 const pathways = [
   { name: "GCSEs", icon: BookOpen },
@@ -26,11 +30,11 @@ const pathways = [
   { name: "Universities", icon: School },
 ];
 
-const metrics = [
-  { label: "Partner Schools", value: "150+" },
-  { label: "Employer Clients", value: "500+" },
-  { label: "Candidates Registered", value: "12,000+" },
-  { label: "Placements Made", value: "3,500+" },
+const socialProofStats = [
+  { label: "Candidates", value: 500, suffix: "+" },
+  { label: "Employers", value: 120, suffix: "+" },
+  { label: "Retention Rate", value: 94, suffix: "%" },
+  { label: "UK Regions", value: 12, suffix: "" },
 ];
 
 const valueCards = [
@@ -51,6 +55,24 @@ const valueCards = [
   },
 ];
 
+const howItWorks = {
+  candidates: [
+    { step: 1, title: "Create your profile", desc: "Tell us about your background and interests" },
+    { step: 2, title: "Take the career quiz", desc: "Get matched to your ideal construction role" },
+    { step: 3, title: "Apply & get hired", desc: "Connect with employers looking for you" },
+  ],
+  employers: [
+    { step: 1, title: "Post your roles", desc: "Describe what you're looking for" },
+    { step: 2, title: "Get matched candidates", desc: "AI-powered matching finds the best fit" },
+    { step: 3, title: "Hire with confidence", desc: "Build Ready badges show who's prepared" },
+  ],
+  institutions: [
+    { step: 1, title: "Register your institution", desc: "Upload your student cohorts" },
+    { step: 2, title: "Track placements", desc: "Monitor student outcomes in real-time" },
+    { step: 3, title: "Generate reports", desc: "One-click DfE, Ofsted, and CITB reporting" },
+  ],
+};
+
 const quickLinks = [
   { name: "Candidates", path: "/candidates", icon: UserCircle, description: "Start your career journey" },
   { name: "Employers", path: "/employers", icon: Building2, description: "Find early-career talent" },
@@ -61,6 +83,38 @@ const quickLinks = [
   { name: "Contact Us", path: "/contact", icon: Users, description: "Get in touch" },
 ];
 
+function AnimatedCounter({ target, suffix }: { target: number; suffix: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const animated = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !animated.current) {
+          animated.current = true;
+          let start = 0;
+          const duration = 1500;
+          const startTime = performance.now();
+          const animate = (currentTime: number) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.floor(eased * target));
+            if (progress < 1) requestAnimationFrame(animate);
+          };
+          requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return <div ref={ref} className="text-3xl md:text-4xl font-bold text-accent">{count}{suffix}</div>;
+}
+
 const Index = () => {
   return (
     <Layout>
@@ -69,7 +123,7 @@ const Index = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_50%)]" />
         <div className="container relative">
           <div className="max-w-4xl mx-auto text-center space-y-8">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight animate-fade-up opacity-0" style={{ animationDelay: "0.1s", animationFillMode: "forwards" }}>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight animate-fade-up opacity-0" style={{ animationDelay: "0.1s", animationFillMode: "forwards", fontFamily: 'Georgia, serif' }}>
               Building the Next Generation of{" "}
               <span className="text-gradient-primary">Construction Talent</span>
             </h1>
@@ -92,8 +146,8 @@ const Index = () => {
                 </Link>
               </Button>
               <Button variant="hero" size="lg" asChild>
-                <Link to="/jobs">
-                  Browse Jobs
+                <Link to="/pathfinder">
+                  Career Pathfinder
                 </Link>
               </Button>
             </div>
@@ -101,8 +155,22 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Social Proof Counters */}
+      <section className="py-10 border-y border-border bg-card/50">
+        <div className="container">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {socialProofStats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+                <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Pathways Badges */}
-      <section className="py-12 border-y border-border bg-card/30">
+      <section className="py-12 border-b border-border bg-card/30">
         <div className="container">
           <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
             {pathways.map((pathway, index) => (
@@ -145,20 +213,34 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Metrics Section */}
+      {/* How It Works */}
       <section className="py-16 md:py-24">
         <div className="container">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {metrics.map((metric, index) => (
-              <div
-                key={metric.label}
-                className="p-6 rounded-xl bg-card border border-border text-center card-glow animate-fade-up opacity-0"
-                style={{ animationDelay: `${0.5 + index * 0.1}s`, animationFillMode: "forwards" }}
-              >
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
-                  {metric.value}
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4" style={{ fontFamily: 'Georgia, serif' }}>
+              How It Works
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">Three simple steps for every user type</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {(["candidates", "employers", "institutions"] as const).map((type) => (
+              <div key={type} className="p-6 rounded-xl bg-card border border-border">
+                <h3 className="text-lg font-bold text-foreground mb-4 capitalize" style={{ fontFamily: 'Georgia, serif' }}>
+                  {type === "candidates" ? "🎓 Candidates" : type === "employers" ? "🏗️ Employers" : "🏫 Institutions"}
+                </h3>
+                <div className="space-y-4">
+                  {howItWorks[type].map((item) => (
+                    <div key={item.step} className="flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0 text-sm font-bold text-accent">
+                        {item.step}
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground text-sm">{item.title}</p>
+                        <p className="text-xs text-muted-foreground">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="text-sm text-muted-foreground">{metric.label}</div>
               </div>
             ))}
           </div>
@@ -169,7 +251,7 @@ const Index = () => {
       <section className="py-16 md:py-24 bg-background-deep">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4" style={{ fontFamily: 'Georgia, serif' }}>
               Why BuildFuture Talent?
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -178,33 +260,60 @@ const Index = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {valueCards.map((card, index) => (
-              <div
-                key={card.title}
-                className="p-8 rounded-xl bg-card border border-border card-glow group"
-              >
+            {valueCards.map((card) => (
+              <div key={card.title} className="p-8 rounded-xl bg-card border border-border card-glow group">
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                   <card.icon className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">
-                  {card.title}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {card.description}
-                </p>
+                <h3 className="text-xl font-semibold text-foreground mb-3">{card.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{card.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* For Schools & Colleges Section */}
       <section className="py-16 md:py-24">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4" style={{ fontFamily: 'Georgia, serif' }}>
+              For Schools & Colleges
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Partner with us to place your students into rewarding construction careers
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            {[
+              { title: "Track Placements", desc: "Real-time dashboard showing where your students are placed and how they're progressing.", icon: MapPin },
+              { title: "Government Reporting", desc: "One-click DfE, Ofsted, and CITB reports — no more manual spreadsheets.", icon: BarChart3 },
+              { title: "Direct Employer Connections", desc: "Connect your students directly with vetted construction employers in your region.", icon: Handshake },
+            ].map((card) => (
+              <div key={card.title} className="p-8 rounded-xl bg-card border border-border card-glow group">
+                <div className="h-12 w-12 rounded-lg bg-secondary/10 flex items-center justify-center mb-6 group-hover:bg-secondary/20 transition-colors">
+                  <card.icon className="h-6 w-6 text-secondary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">{card.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{card.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="text-center">
+            <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Link to="/register">Become an Institution Partner <ArrowRight className="h-4 w-4 ml-1" /></Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 md:py-24 bg-background-deep">
         <div className="container">
           <div className="max-w-4xl mx-auto text-center p-8 md:p-12 rounded-2xl bg-card border border-border relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.05),transparent_70%)]" />
             <div className="relative">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4" style={{ fontFamily: 'Georgia, serif' }}>
                 Ready to Build Your Future?
               </h2>
               <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
@@ -212,10 +321,10 @@ const Index = () => {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button variant="cta-secondary" size="lg" asChild>
-                  <Link to="/candidate-dashboard">Register as Candidate</Link>
+                  <Link to="/register">Register as Candidate</Link>
                 </Button>
                 <Button variant="cta-primary" size="lg" asChild>
-                  <Link to="/employer-dashboard">Start Hiring</Link>
+                  <Link to="/register">Start Hiring</Link>
                 </Button>
               </div>
             </div>
