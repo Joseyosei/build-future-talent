@@ -8,7 +8,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, ArrowRight, ArrowLeft, Sun, Building, Shuffle, Hammer, Pencil, Users, Phone, TrendingUp, Shield, Sparkles, MapPin, Navigation, Globe, Upload, Camera, Check } from 'lucide-react';
+import { Building2, ArrowRight, ArrowLeft, Sun, Building, Shuffle, Hammer, Pencil, Users, Phone, TrendingUp, Shield, Sparkles, MapPin, Navigation, Globe, Upload, Camera, Check, Linkedin, FileText } from 'lucide-react';
+
+const skillTags = [
+  'Teamwork', 'Problem Solving', 'Physical Fitness', 'Communication',
+  'Leadership', 'IT Skills', 'Driving Licence', 'First Aid', 'Time Management',
+  'Maths', 'Design', 'Customer Service', 'Organisation', 'Creativity',
+];
 
 const quizQuestions = [
   {
@@ -55,36 +61,51 @@ const availabilityOptions = [
   { value: 'immediate', label: 'Immediately', desc: "I'm ready to start right away" },
   { value: '1month', label: 'Within 1 Month', desc: 'Need a short notice period' },
   { value: '3months', label: 'Within 3 Months', desc: 'Currently wrapping things up' },
-  { value: 'exploring', label: 'Currently Employed — Exploring', desc: 'Not in a rush, seeing what\'s out there' },
+  { value: 'exploring', label: 'Currently Employed — Exploring', desc: "Not in a rush, seeing what's out there" },
 ];
 
 const rightToWorkOptions = [
   { value: 'uk_citizen', label: 'UK Citizen / Settled Status' },
-  { value: 'work_visa', label: 'Valid Work Visa' },
-  { value: 'apprenticeship', label: 'Eligible for Apprenticeship' },
+  { value: 'eu_settled', label: 'EU Settled Status' },
+  { value: 'work_visa', label: 'Skilled Worker Visa' },
+  { value: 'student_visa', label: 'Student Visa' },
+];
+
+const ageRangeOptions = [
+  { value: '16-18', label: '16–18' },
+  { value: '19-24', label: '19–24' },
+  { value: '25+', label: '25+' },
 ];
 
 const matchedRoles = [
-  { role: 'Site Manager', match: 92, salary: '£35,000 – £55,000' },
-  { role: 'Quantity Surveyor', match: 87, salary: '£30,000 – £50,000' },
-  { role: 'Construction Project Coordinator', match: 84, salary: '£28,000 – £42,000' },
+  { role: 'Site Manager', match: 92, salary: '£35,000 – £55,000', desc: 'Oversee construction projects, manage teams, ensure safety and quality standards.' },
+  { role: 'Quantity Surveyor', match: 87, salary: '£30,000 – £50,000', desc: 'Manage costs, contracts, and financial aspects of construction projects.' },
+  { role: 'Construction Project Coordinator', match: 84, salary: '£28,000 – £42,000', desc: 'Coordinate schedules, resources, and communication across project teams.' },
 ];
 
 export default function CandidateOnboarding() {
   const [step, setStep] = useState(1);
   const [background, setBackground] = useState('');
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [availability, setAvailability] = useState('');
   const [rightToWork, setRightToWork] = useState('');
+  const [ageRange, setAgeRange] = useState('');
   const [bio, setBio] = useState('');
+  const [linkedIn, setLinkedIn] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const totalSteps = 6;
+  const totalSteps = 5;
 
   const handleQuizAnswer = (questionId: string, value: string) => {
     setQuizAnswers(prev => ({ ...prev, [questionId]: value }));
+  };
+
+  const toggleSkill = (skill: string) => {
+    setSelectedSkills(prev => prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]);
   };
 
   const currentQuizQuestion = quizQuestions.find(q => !quizAnswers[q.id]);
@@ -97,7 +118,7 @@ export default function CandidateOnboarding() {
     const { error } = await supabase.from('candidate_profiles').upsert({
       user_id: user.id,
       background_text: background,
-      quiz_answers: quizAnswers,
+      quiz_answers: { ...quizAnswers, skills: selectedSkills, ageRange },
       availability,
       right_to_work: rightToWork,
       bio,
@@ -107,12 +128,42 @@ export default function CandidateOnboarding() {
     if (error) {
       toast({ title: 'Error saving profile', description: error.message, variant: 'destructive' });
     } else {
-      setStep(6);
+      setStep(5);
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
     }
   };
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Confetti overlay */}
+      {showConfetti && (
+        <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden">
+          {Array.from({ length: 50 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute animate-bounce"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `-${Math.random() * 20}%`,
+                width: `${Math.random() * 10 + 5}px`,
+                height: `${Math.random() * 10 + 5}px`,
+                backgroundColor: ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--secondary))'][Math.floor(Math.random() * 3)],
+                borderRadius: Math.random() > 0.5 ? '50%' : '0',
+                animation: `confettiFall ${Math.random() * 2 + 2}s ease-in forwards`,
+                animationDelay: `${Math.random() * 1}s`,
+              }}
+            />
+          ))}
+          <style>{`
+            @keyframes confettiFall {
+              0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+              100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+            }
+          `}</style>
+        </div>
+      )}
+
       {/* Header */}
       <div className="border-b border-border">
         <div className="container flex h-14 items-center gap-2">
@@ -133,7 +184,7 @@ export default function CandidateOnboarding() {
       </div>
 
       <div className="container max-w-2xl py-10 px-4">
-        {/* Step 1: Background */}
+        {/* Step 1: Background + Skills */}
         {step === 1 && (
           <div className="space-y-6 animate-fade-in">
             <div>
@@ -141,7 +192,7 @@ export default function CandidateOnboarding() {
                 Tell us about your background
               </h1>
               <p className="mt-2 text-muted-foreground text-sm">
-                This isn't a CV. Tell us about any previous jobs, hobbies, interests, or skills from ANY sector. 
+                This isn't a CV. Tell us about any previous jobs, hobbies, interests, or skills from ANY sector.
                 We'll use this to match you with construction roles you might love.
               </p>
             </div>
@@ -149,8 +200,28 @@ export default function CandidateOnboarding() {
               value={background}
               onChange={(e) => setBackground(e.target.value)}
               placeholder="e.g. I've worked in retail for 3 years and enjoy problem-solving. I'm good with my hands and love DIY projects at home..."
-              className="min-h-[200px] text-base"
+              className="min-h-[160px] text-base"
             />
+
+            <div>
+              <Label className="mb-3 block">Skills that describe you (click to add)</Label>
+              <div className="flex flex-wrap gap-2">
+                {skillTags.map(skill => (
+                  <button
+                    key={skill}
+                    onClick={() => toggleSkill(skill)}
+                    className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                      selectedSkills.includes(skill)
+                        ? 'bg-accent text-accent-foreground border-accent'
+                        : 'bg-transparent text-muted-foreground border-border hover:border-accent/30'
+                    }`}
+                  >
+                    {skill}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="flex justify-end">
               <Button onClick={() => setStep(2)} disabled={!background.trim()} className="bg-accent text-accent-foreground hover:bg-accent/90">
                 Next <ArrowRight className="h-4 w-4 ml-1" />
@@ -212,77 +283,85 @@ export default function CandidateOnboarding() {
           </div>
         )}
 
-        {/* Step 3: Availability */}
+        {/* Step 3: Availability + Eligibility */}
         {step === 3 && (
           <div className="space-y-6 animate-fade-in">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={() => setStep(2)}><ArrowLeft className="h-4 w-4" /></Button>
               <div>
-                <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>When can you start?</h1>
-                <p className="text-sm text-muted-foreground">Let employers know your availability</p>
+                <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>Availability & eligibility</h1>
+                <p className="text-sm text-muted-foreground">Let employers know when you can start</p>
               </div>
             </div>
-            <div className="grid gap-3">
-              {availabilityOptions.map(opt => (
-                <Card
-                  key={opt.value}
-                  className={`cursor-pointer transition-all ${availability === opt.value ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/30'}`}
-                  onClick={() => setAvailability(opt.value)}
-                >
-                  <CardContent className="p-4">
-                    <p className="font-medium text-foreground">{opt.label}</p>
-                    <p className="text-sm text-muted-foreground">{opt.desc}</p>
-                  </CardContent>
-                </Card>
-              ))}
+
+            <div>
+              <Label className="mb-3 block font-semibold">When can you start?</Label>
+              <div className="grid gap-3">
+                {availabilityOptions.map(opt => (
+                  <Card
+                    key={opt.value}
+                    className={`cursor-pointer transition-all ${availability === opt.value ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/30'}`}
+                    onClick={() => setAvailability(opt.value)}
+                  >
+                    <CardContent className="p-4">
+                      <p className="font-medium text-foreground">{opt.label}</p>
+                      <p className="text-sm text-muted-foreground">{opt.desc}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
+
+            <div>
+              <Label className="mb-3 block font-semibold">Right to work</Label>
+              <div className="grid grid-cols-2 gap-3">
+                {rightToWorkOptions.map(opt => (
+                  <Card
+                    key={opt.value}
+                    className={`cursor-pointer transition-all ${rightToWork === opt.value ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/30'}`}
+                    onClick={() => setRightToWork(opt.value)}
+                  >
+                    <CardContent className="p-3">
+                      <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label className="mb-3 block font-semibold">Age range (for apprenticeship eligibility)</Label>
+              <div className="flex gap-3">
+                {ageRangeOptions.map(opt => (
+                  <Card
+                    key={opt.value}
+                    className={`cursor-pointer transition-all flex-1 ${ageRange === opt.value ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/30'}`}
+                    onClick={() => setAgeRange(opt.value)}
+                  >
+                    <CardContent className="p-3 text-center">
+                      <p className="font-medium text-foreground">{opt.label}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
             <div className="flex justify-end">
-              <Button onClick={() => setStep(4)} disabled={!availability} className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button onClick={() => setStep(4)} disabled={!availability || !rightToWork} className="bg-accent text-accent-foreground hover:bg-accent/90">
                 Next <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
           </div>
         )}
 
-        {/* Step 4: Right to Work */}
+        {/* Step 4: Profile Polish */}
         {step === 4 && (
           <div className="space-y-6 animate-fade-in">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={() => setStep(3)}><ArrowLeft className="h-4 w-4" /></Button>
               <div>
-                <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>Right to work</h1>
-                <p className="text-sm text-muted-foreground">This helps us match you with appropriate opportunities</p>
-              </div>
-            </div>
-            <div className="grid gap-3">
-              {rightToWorkOptions.map(opt => (
-                <Card
-                  key={opt.value}
-                  className={`cursor-pointer transition-all ${rightToWork === opt.value ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/30'}`}
-                  onClick={() => setRightToWork(opt.value)}
-                >
-                  <CardContent className="p-4">
-                    <p className="font-medium text-foreground">{opt.label}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <div className="flex justify-end">
-              <Button onClick={() => setStep(5)} disabled={!rightToWork} className="bg-accent text-accent-foreground hover:bg-accent/90">
-                Next <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 5: Photo + Bio */}
-        {step === 5 && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setStep(4)}><ArrowLeft className="h-4 w-4" /></Button>
-              <div>
                 <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>Almost there!</h1>
-                <p className="text-sm text-muted-foreground">Add a photo and short bio to complete your profile</p>
+                <p className="text-sm text-muted-foreground">Polish your profile to make a great first impression</p>
               </div>
             </div>
 
@@ -296,6 +375,7 @@ export default function CandidateOnboarding() {
                 </button>
               </div>
             </div>
+            <p className="text-center text-xs text-muted-foreground">Profile photo (optional)</p>
 
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -311,6 +391,27 @@ export default function CandidateOnboarding() {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2"><Linkedin className="h-4 w-4 text-secondary" /> LinkedIn URL <span className="text-xs text-muted-foreground">(optional)</span></Label>
+              <Input
+                value={linkedIn}
+                onChange={(e) => setLinkedIn(e.target.value)}
+                placeholder="https://linkedin.com/in/yourprofile"
+                className="h-11"
+              />
+            </div>
+
+            <div className="p-4 rounded-lg bg-muted/30 border border-border">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Upload your CV</p>
+                  <p className="text-xs text-muted-foreground">Optional bonus — not required</p>
+                </div>
+                <Button variant="outline" size="sm">Upload</Button>
+              </div>
+            </div>
+
             <Button
               onClick={handleSaveProfile}
               disabled={isLoading}
@@ -321,8 +422,8 @@ export default function CandidateOnboarding() {
           </div>
         )}
 
-        {/* Step 6: Match Results */}
-        {step === 6 && (
+        {/* Step 5: Match Results */}
+        {step === 5 && (
           <div className="space-y-8 animate-fade-in text-center">
             <div>
               <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>
@@ -331,20 +432,21 @@ export default function CandidateOnboarding() {
               <p className="mt-2 text-muted-foreground">Based on your answers, here are your top matched roles</p>
             </div>
 
-            <div className="grid gap-4">
-              {matchedRoles.map((role, i) => (
+            <div className="grid gap-4 text-left">
+              {matchedRoles.map((role) => (
                 <Card key={role.role} className="border-border">
-                  <CardContent className="p-5 flex items-center justify-between">
-                    <div className="text-left">
-                      <p className="font-bold text-foreground text-lg">{role.role}</p>
-                      <p className="text-sm text-muted-foreground">{role.salary}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-accent">{role.match}%</p>
-                        <p className="text-xs text-muted-foreground">match</p>
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="font-bold text-foreground text-lg">{role.role}</p>
+                        <p className="text-sm text-muted-foreground">{role.salary}</p>
                       </div>
+                      <span className="px-3 py-1 text-sm font-bold bg-primary/10 text-primary rounded-full">{role.match}% match</span>
                     </div>
+                    <p className="text-sm text-muted-foreground">{role.desc}</p>
+                    <Button asChild size="sm" variant="outline" className="mt-3">
+                      <a href="/jobs">View jobs <ArrowRight className="h-3 w-3 ml-1" /></a>
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -354,7 +456,7 @@ export default function CandidateOnboarding() {
               onClick={() => navigate('/dashboard/candidate')}
               className="h-12 px-8 bg-accent text-accent-foreground hover:bg-accent/90"
             >
-              View Jobs <ArrowRight className="h-4 w-4 ml-1" />
+              Go to my dashboard <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         )}

@@ -15,9 +15,12 @@ import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import CandidateDashboard from "./pages/CandidateDashboard";
 import EmployerDashboard from "./pages/EmployerDashboard";
+import InstitutionDashboard from "./pages/InstitutionDashboard";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import PathfinderPage from "./pages/PathfinderPage";
+import BadgesPage from "./pages/BadgesPage";
 import CandidateOnboarding from "./pages/onboarding/CandidateOnboarding";
 import EmployerOnboarding from "./pages/onboarding/EmployerOnboarding";
 import InstitutionOnboarding from "./pages/onboarding/InstitutionOnboarding";
@@ -42,6 +45,8 @@ const App = () => (
             <Route path="/resources" element={<ResourcesPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/pathfinder" element={<PathfinderPage />} />
+            <Route path="/badges" element={<BadgesPage />} />
 
             {/* Auth */}
             <Route path="/login" element={<LoginPage />} />
@@ -74,6 +79,11 @@ const App = () => (
             <Route path="/dashboard/employer/*" element={
               <ProtectedRoute allowedRoles={['employer']}>
                 <EmployerDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/institution/*" element={
+              <ProtectedRoute allowedRoles={['institution']}>
+                <InstitutionDashboard />
               </ProtectedRoute>
             } />
             <Route path="/candidate-dashboard/*" element={<CandidateDashboard />} />

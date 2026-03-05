@@ -12,6 +12,8 @@ const visibleLinks = [
   { name: "Jobs", path: "/jobs" },
   { name: "Employers", path: "/employers" },
   { name: "Institutions", path: "/schools" },
+  { name: "Pathfinder", path: "/pathfinder" },
+  { name: "Badges", path: "/badges" },
 ];
 
 const dropdownLinks = [
