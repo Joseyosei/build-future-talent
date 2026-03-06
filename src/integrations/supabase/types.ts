@@ -14,54 +14,184 @@ export type Database = {
   }
   public: {
     Tables: {
+      applications: {
+        Row: {
+          applied_at: string | null
+          candidate_id: string
+          id: string
+          job_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          applied_at?: string | null
+          candidate_id: string
+          id?: string
+          job_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          applied_at?: string | null
+          candidate_id?: string
+          id?: string
+          job_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      badges: {
+        Row: {
+          category: string | null
+          description: string | null
+          id: string
+          name: string
+          sort_order: number | null
+          time_estimate: string | null
+        }
+        Insert: {
+          category?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          sort_order?: number | null
+          time_estimate?: string | null
+        }
+        Update: {
+          category?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          sort_order?: number | null
+          time_estimate?: string | null
+        }
+        Relationships: []
+      }
+      candidate_badges: {
+        Row: {
+          badge_id: string
+          candidate_id: string
+          earned_at: string | null
+          id: string
+        }
+        Insert: {
+          badge_id: string
+          candidate_id: string
+          earned_at?: string | null
+          id?: string
+        }
+        Update: {
+          badge_id?: string
+          candidate_id?: string
+          earned_at?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidate_profiles: {
         Row: {
+          age_range: string | null
           availability: string | null
           background_text: string | null
           bio: string | null
           created_at: string
+          cv_url: string | null
           first_name: string | null
           id: string
           last_name: string | null
+          linkedin_url: string | null
           location: string | null
           phone: string | null
           photo_url: string | null
+          postcode: string | null
+          profile_completion: number | null
           quiz_answers: Json | null
           right_to_work: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          age_range?: string | null
           availability?: string | null
           background_text?: string | null
           bio?: string | null
           created_at?: string
+          cv_url?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
+          linkedin_url?: string | null
           location?: string | null
           phone?: string | null
           photo_url?: string | null
+          postcode?: string | null
+          profile_completion?: number | null
           quiz_answers?: Json | null
           right_to_work?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          age_range?: string | null
           availability?: string | null
           background_text?: string | null
           bio?: string | null
           created_at?: string
+          cv_url?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
+          linkedin_url?: string | null
           location?: string | null
           phone?: string | null
           photo_url?: string | null
+          postcode?: string | null
+          profile_completion?: number | null
           quiz_answers?: Json | null
           right_to_work?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      cohorts: {
+        Row: {
+          id: string
+          institution_id: string
+          name: string
+          student_count: number | null
+          upload_date: string | null
+        }
+        Insert: {
+          id?: string
+          institution_id: string
+          name: string
+          student_count?: number | null
+          upload_date?: string | null
+        }
+        Update: {
+          id?: string
+          institution_id?: string
+          name?: string
+          student_count?: number | null
+          upload_date?: string | null
         }
         Relationships: []
       }
@@ -172,6 +302,136 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      jobs: {
+        Row: {
+          build_ready_required: boolean | null
+          category: string
+          contract_type: string | null
+          created_at: string | null
+          description: string | null
+          employer_id: string
+          id: string
+          location: string
+          open_to_career_changers: boolean | null
+          requirements: string | null
+          salary_max: number | null
+          salary_min: number | null
+          status: string | null
+          title: string
+        }
+        Insert: {
+          build_ready_required?: boolean | null
+          category: string
+          contract_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          employer_id: string
+          id?: string
+          location: string
+          open_to_career_changers?: boolean | null
+          requirements?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: string | null
+          title: string
+        }
+        Update: {
+          build_ready_required?: boolean | null
+          category?: string
+          contract_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          employer_id?: string
+          id?: string
+          location?: string
+          open_to_career_changers?: boolean | null
+          requirements?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      match_scores: {
+        Row: {
+          breakdown: Json | null
+          candidate_id: string
+          computed_at: string | null
+          id: string
+          job_id: string
+          score: number
+        }
+        Insert: {
+          breakdown?: Json | null
+          candidate_id: string
+          computed_at?: string | null
+          id?: string
+          job_id: string
+          score: number
+        }
+        Update: {
+          breakdown?: Json | null
+          candidate_id?: string
+          computed_at?: string | null
+          id?: string
+          job_id?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_scores_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      placements: {
+        Row: {
+          candidate_id: string
+          created_at: string | null
+          employer_id: string | null
+          id: string
+          job_id: string | null
+          start_date: string | null
+          status: string | null
+          three_month_checkin: string | null
+          twelve_month_checkin: string | null
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string | null
+          employer_id?: string | null
+          id?: string
+          job_id?: string | null
+          start_date?: string | null
+          status?: string | null
+          three_month_checkin?: string | null
+          twelve_month_checkin?: string | null
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string | null
+          employer_id?: string | null
+          id?: string
+          job_id?: string | null
+          start_date?: string | null
+          status?: string | null
+          three_month_checkin?: string | null
+          twelve_month_checkin?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "placements_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

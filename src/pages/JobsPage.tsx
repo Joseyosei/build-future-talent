@@ -1,101 +1,64 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { 
-  Search, 
-  MapPin, 
-  Building2, 
-  Clock,
-  Briefcase,
-  ArrowRight,
-  Filter
+import { Skeleton } from "@/components/ui/skeleton";
+import { useActiveJobs, useApplyForJob, useCandidateApplications } from "@/hooks/useSupabaseQuery";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Search, MapPin, Building2, Clock, Briefcase, ArrowRight, Filter, Check
 } from "lucide-react";
 
-const jobListings = [
-  {
-    id: 1,
-    title: "Apprentice Carpenter",
-    company: "Morrison Construction",
-    location: "Birmingham",
-    type: "Apprenticeship",
-    sector: "Residential",
-    salary: "£15,000 - £18,000",
-    posted: "2 days ago",
-  },
-  {
-    id: 2,
-    title: "Graduate Quantity Surveyor",
-    company: "Balfour Beatty",
-    location: "London",
-    type: "Graduate",
-    sector: "Commercial",
-    salary: "£28,000 - £32,000",
-    posted: "1 day ago",
-  },
-  {
-    id: 3,
-    title: "Trainee Site Manager",
-    company: "Kier Group",
-    location: "Manchester",
-    type: "Entry Level",
-    sector: "Infrastructure",
-    salary: "£24,000 - £28,000",
-    posted: "3 days ago",
-  },
-  {
-    id: 4,
-    title: "Apprentice Electrician",
-    company: "Willmott Dixon",
-    location: "Bristol",
-    type: "Apprenticeship",
-    sector: "Commercial",
-    salary: "£14,000 - £17,000",
-    posted: "5 days ago",
-  },
-  {
-    id: 5,
-    title: "Junior Civil Engineer",
-    company: "Laing O'Rourke",
-    location: "Leeds",
-    type: "Graduate",
-    sector: "Infrastructure",
-    salary: "£26,000 - £30,000",
-    posted: "1 week ago",
-  },
-  {
-    id: 6,
-    title: "Apprentice Plumber",
-    company: "Vistry Group",
-    location: "Newcastle",
-    type: "Apprenticeship",
-    sector: "Residential",
-    salary: "£13,000 - £16,000",
-    posted: "4 days ago",
-  },
+const categories = [
+  "All", "Site Engineer", "Quantity Surveyor", "Project Manager",
+  "Apprentice Carpenter", "Apprentice Electrician", "Apprentice Plumber",
+  "Trainee Site Coordinator", "Graduate Civil Engineer", "BIM Technician",
+  "Health & Safety Officer", "Site Manager", "Estimator", "CAD Technician",
 ];
 
-const pathways = ["All", "Apprenticeship", "Entry Level", "Graduate"];
-const sectors = ["All", "Residential", "Commercial", "Infrastructure"];
+const contractTypes = ["All", "Full-time", "Part-time", "Apprenticeship", "Contract"];
 
 export default function JobsPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPathway, setSelectedPathway] = useState("All");
-  const [selectedSector, setSelectedSector] = useState("All");
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || "");
   const [locationFilter, setLocationFilter] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || "All");
+  const [selectedContract, setSelectedContract] = useState("All");
+  const { user, userRole } = useAuth();
+  const { toast } = useToast();
 
-  const filteredJobs = jobListings.filter((job) => {
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.company.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPathway = selectedPathway === "All" || job.type === selectedPathway;
-    const matchesSector = selectedSector === "All" || job.sector === selectedSector;
-    const matchesLocation = !locationFilter || job.location.toLowerCase().includes(locationFilter.toLowerCase());
-    return matchesSearch && matchesPathway && matchesSector && matchesLocation;
+  const { data: jobs, isLoading } = useActiveJobs({
+    category: selectedCategory,
+    location: locationFilter,
+    search: searchTerm,
+  });
+
+  const { data: myApplications } = useCandidateApplications();
+  const applyMutation = useApplyForJob();
+
+  const appliedJobIds = new Set((myApplications || []).map((a: any) => a.job_id));
+
+  const handleApply = async (jobId: string) => {
+    if (!user) {
+      window.location.href = '/register';
+      return;
+    }
+    try {
+      await applyMutation.mutateAsync(jobId);
+      toast({ title: 'Application submitted!' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
+  };
+
+  const filteredJobs = (jobs || []).filter((job: any) => {
+    if (selectedContract !== "All" && job.contract_type !== selectedContract) return false;
+    return true;
   });
 
   return (
     <Layout>
-      {/* Hero Section */}
       <section className="py-12 md:py-16 gradient-hero border-b border-border">
         <div className="container">
           <div className="max-w-3xl">
@@ -105,8 +68,6 @@ export default function JobsPage() {
             <p className="text-muted-foreground mb-8">
               Browse apprenticeships, entry-level positions, and graduate roles across the UK construction industry.
             </p>
-
-            {/* Search Bar */}
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -133,52 +94,48 @@ export default function JobsPage() {
         </div>
       </section>
 
-      {/* Filters & Results */}
       <section className="py-8 md:py-12">
         <div className="container">
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sidebar Filters */}
             <aside className="lg:w-64 shrink-0">
               <div className="p-6 rounded-xl bg-card border border-border sticky top-24">
                 <div className="flex items-center gap-2 mb-6">
                   <Filter className="h-5 w-5 text-primary" />
                   <h3 className="font-semibold text-foreground">Filters</h3>
                 </div>
-                
                 <div className="space-y-6">
                   <div>
-                    <label className="text-sm font-medium text-foreground mb-3 block">Pathway</label>
-                    <div className="space-y-2">
-                      {pathways.map((pathway) => (
+                    <label className="text-sm font-medium text-foreground mb-3 block">Category</label>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {categories.map((cat) => (
                         <button
-                          key={pathway}
-                          onClick={() => setSelectedPathway(pathway)}
+                          key={cat}
+                          onClick={() => setSelectedCategory(cat)}
                           className={`w-full px-4 py-2 text-sm rounded-lg text-left transition-colors ${
-                            selectedPathway === pathway
+                            selectedCategory === cat
                               ? "bg-primary/10 text-primary border border-primary/30"
                               : "text-muted-foreground hover:bg-card-alt hover:text-foreground"
                           }`}
                         >
-                          {pathway}
+                          {cat}
                         </button>
                       ))}
                     </div>
                   </div>
-
                   <div>
-                    <label className="text-sm font-medium text-foreground mb-3 block">Sector</label>
+                    <label className="text-sm font-medium text-foreground mb-3 block">Contract Type</label>
                     <div className="space-y-2">
-                      {sectors.map((sector) => (
+                      {contractTypes.map((ct) => (
                         <button
-                          key={sector}
-                          onClick={() => setSelectedSector(sector)}
+                          key={ct}
+                          onClick={() => setSelectedContract(ct)}
                           className={`w-full px-4 py-2 text-sm rounded-lg text-left transition-colors ${
-                            selectedSector === sector
+                            selectedContract === ct
                               ? "bg-primary/10 text-primary border border-primary/30"
                               : "text-muted-foreground hover:bg-card-alt hover:text-foreground"
                           }`}
                         >
-                          {sector}
+                          {ct}
                         </button>
                       ))}
                     </div>
@@ -187,7 +144,6 @@ export default function JobsPage() {
               </div>
             </aside>
 
-            {/* Job Listings */}
             <div className="flex-1">
               <div className="flex items-center justify-between mb-6">
                 <p className="text-muted-foreground">
@@ -195,58 +151,78 @@ export default function JobsPage() {
                 </p>
               </div>
 
-              <div className="space-y-4">
-                {filteredJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className="p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-all group card-glow"
-                  >
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary">
-                            {job.type}
-                          </span>
-                          <span className="px-3 py-1 text-xs font-medium rounded-full bg-secondary/10 text-secondary">
-                            {job.sector}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
-                          {job.title}
-                        </h3>
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Building2 className="h-4 w-4" />
-                            {job.company}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-4 w-4" />
-                            {job.location}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Briefcase className="h-4 w-4" />
-                            {job.salary}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {job.posted}
-                          </span>
-                        </div>
-                      </div>
-                      <Button variant="outline" asChild className="shrink-0">
-                        <Link to="/candidate-dashboard">
-                          Apply Now
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                      </Button>
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="p-6 rounded-xl bg-card border border-border">
+                      <Skeleton className="h-6 w-1/3 mb-3" />
+                      <Skeleton className="h-4 w-1/2 mb-2" />
+                      <Skeleton className="h-4 w-2/3" />
                     </div>
-                  </div>
-                ))}
-              </div>
-
-              {filteredJobs.length === 0 && (
+                  ))}
+                </div>
+              ) : filteredJobs.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">No jobs match your criteria. Try adjusting your filters.</p>
+                  <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg font-medium text-foreground mb-2">No jobs found</p>
+                  <p className="text-muted-foreground">Try adjusting your filters or search terms.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredJobs.map((job: any) => (
+                    <div key={job.id} className="p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-all group card-glow">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary">
+                              {job.category}
+                            </span>
+                            {job.contract_type && (
+                              <span className="px-3 py-1 text-xs font-medium rounded-full bg-secondary/10 text-secondary">
+                                {job.contract_type}
+                              </span>
+                            )}
+                            {job.build_ready_required && (
+                              <span className="px-3 py-1 text-xs font-medium rounded-full bg-accent/10 text-accent">
+                                Build Ready Required
+                              </span>
+                            )}
+                          </div>
+                          <h3 className="text-lg font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
+                            {job.title}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Building2 className="h-4 w-4" />
+                              {(job as any).employer_profiles?.company_name || 'Company'}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-4 w-4" /> {job.location}
+                            </span>
+                            {job.salary_min && job.salary_max && (
+                              <span className="flex items-center gap-1">
+                                <Briefcase className="h-4 w-4" />
+                                £{job.salary_min.toLocaleString()} - £{job.salary_max.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {appliedJobIds.has(job.id) ? (
+                          <Button variant="outline" disabled className="shrink-0 text-primary border-primary/30">
+                            <Check className="h-4 w-4 mr-2" /> Applied
+                          </Button>
+                        ) : (
+                          <Button
+                            className="shrink-0 bg-accent text-accent-foreground hover:bg-accent/90"
+                            onClick={() => handleApply(job.id)}
+                            disabled={applyMutation.isPending}
+                          >
+                            Apply Now <ArrowRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
